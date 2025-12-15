@@ -36,5 +36,8 @@ ENV/
 .coverage
 htmlcov/
 
+# Logs
+logs/
+
 # Test vault daily notes (generated during integration tests)
 test-vault/10-Daily/
