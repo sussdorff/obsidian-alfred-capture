@@ -3,7 +3,7 @@ name = "obsidian-alfred-capture"
 version = "0.1.0"
 description = "Alfred workflow for quick capture to Obsidian daily notes"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.11"
 license = {text = "MIT"}
 authors = [
     {name = "Malte"}
@@ -23,5 +23,13 @@ dev = [
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = [
+    "integration: marks tests as integration tests (require running Obsidian)",
+]
+# By default, skip integration tests
+addopts = "-m 'not integration'"

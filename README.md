@@ -15,7 +15,7 @@ Quick capture to Obsidian daily notes from anywhere on macOS using Alfred and th
 - macOS
 - [Alfred 5](https://www.alfredapp.com/) with Powerpack
 - [Obsidian](https://obsidian.md/) with [Local REST API](https://github.com/coddingtonbear/obsidian-local-rest-api) plugin
-- Python 3.9+
+- Python 3.11+
 
 ## Installation
 
