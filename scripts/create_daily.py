@@ -13,27 +13,29 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from src.api import ObsidianAPI, ObsidianAPIError
 from src.capture import Capture
 from src.config import Config
+from src.obsidian import ensure_obsidian_ready
 
 
 def main() -> int:
-    """Create today's daily note if it doesn't exist.
+    """Create today's daily note if needed and open it in Obsidian.
 
     Returns:
         0 on success, 1 on error.
     """
     try:
         config = Config.from_env()
+        if not ensure_obsidian_ready(config.vault_path, config.api_key, config.api_port):
+            print("Error: Could not connect to Obsidian API")
+            return 1
         api = ObsidianAPI(config.api_key, config.api_port)
         capture = Capture(api, config)
 
-        # Check if daily note already exists
-        existing = api.get_daily_note()
-        if existing is not None:
-            print("Daily note already exists")
-            return 0
-
+        # Ensure daily note exists
         capture.ensure_daily_note()
-        print("Daily note created")
+
+        # Open the daily note in Obsidian
+        api.open_daily_note()
+        print("Daily note opened")
         return 0
     except ObsidianAPIError as e:
         print(f"Error: {e}")

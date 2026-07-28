@@ -162,3 +162,20 @@ class ObsidianAPI:
             return response.status_code == 200
         except ObsidianAPIError:
             return False
+
+    def open_daily_note(self) -> bool:
+        """Open today's daily note in Obsidian.
+
+        Returns:
+            True if successful.
+
+        Raises:
+            ObsidianAPIError: If opening fails.
+        """
+        response = self._request("POST", "/open/periodic/daily/")
+
+        if response.status_code in (200, 201, 204):
+            return True
+        raise ObsidianAPIError(
+            f"Failed to open daily note: {response.status_code} - {response.text}"
+        )

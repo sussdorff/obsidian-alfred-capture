@@ -17,83 +17,125 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from src.api import ObsidianAPI, ObsidianAPIError
 from src.capture import Capture
 from src.config import Config
+from src.obsidian import ensure_obsidian_ready
 
-# AppleScript to get the frontmost browser's current tab
-APPLESCRIPT = '''
+# AppleScript templates for each browser
+BROWSER_SCRIPTS = {
+    "Arc": '''
+        tell application "Arc"
+            if (count of windows) > 0 then
+                set tabTitle to title of active tab of window 1
+                set tabURL to URL of active tab of window 1
+                return tabTitle & "\n" & tabURL
+            end if
+        end tell
+        return ""
+    ''',
+    "Google Chrome": '''
+        tell application "Google Chrome"
+            if (count of windows) > 0 then
+                set tabTitle to title of active tab of window 1
+                set tabURL to URL of active tab of window 1
+                return tabTitle & "\n" & tabURL
+            end if
+        end tell
+        return ""
+    ''',
+    "Safari": '''
+        tell application "Safari"
+            if (count of windows) > 0 then
+                set tabTitle to name of current tab of window 1
+                set tabURL to URL of current tab of window 1
+                return tabTitle & "\n" & tabURL
+            end if
+        end tell
+        return ""
+    ''',
+    "Zen Browser": '''
+        tell application "Zen Browser"
+            if (count of windows) > 0 then
+                set tabTitle to name of front window
+                set tabURL to URL of front document
+                return tabTitle & "\n" & tabURL
+            end if
+        end tell
+        return ""
+    ''',
+    "Firefox": '''
+        tell application "Firefox"
+            if (count of windows) > 0 then
+                set tabTitle to name of front window
+                set tabURL to URL of front document
+                return tabTitle & "\n" & tabURL
+            end if
+        end tell
+        return ""
+    ''',
+}
+
+# Check which browsers are running
+CHECK_RUNNING_SCRIPT = '''
 tell application "System Events"
-    set frontApp to name of first process whose frontmost is true
+    set runningApps to name of every process
 end tell
-
-if frontApp is "Safari" then
-    tell application "Safari"
-        set tabTitle to name of current tab of window 1
-        set tabURL to URL of current tab of window 1
-    end tell
-else if frontApp is "Google Chrome" then
-    tell application "Google Chrome"
-        set tabTitle to title of active tab of window 1
-        set tabURL to URL of active tab of window 1
-    end tell
-else if frontApp is "Arc" then
-    tell application "Arc"
-        set tabTitle to title of active tab of window 1
-        set tabURL to URL of active tab of window 1
-    end tell
-else if frontApp is "Zen Browser" then
-    -- Zen Browser is Firefox-based, uses similar AppleScript interface
-    tell application "Zen Browser"
-        set tabTitle to name of front window
-        set tabURL to URL of front document
-    end tell
-else if frontApp is "Firefox" then
-    tell application "Firefox"
-        set tabTitle to name of front window
-        set tabURL to URL of front document
-    end tell
-else
-    error "Unsupported browser: " & frontApp
-end if
-
-return tabTitle & "\n" & tabURL
+return runningApps
 '''
+
+
+def get_running_browsers() -> list[str]:
+    """Get list of running browser apps."""
+    try:
+        result = subprocess.run(
+            ["osascript", "-e", CHECK_RUNNING_SCRIPT],
+            capture_output=True,
+            text=True,
+            timeout=5,
+        )
+        if result.returncode == 0:
+            running = result.stdout.strip()
+            return [b for b in BROWSER_SCRIPTS.keys() if b in running]
+    except Exception:
+        pass
+    return []
 
 
 def get_browser_tab() -> tuple[str, str] | None:
     """Get the current browser tab title and URL.
 
+    Tries each running browser until one returns a valid URL.
+
     Returns:
         Tuple of (title, url) or None if failed.
     """
-    try:
-        result = subprocess.run(
-            ["osascript", "-e", APPLESCRIPT],
-            capture_output=True,
-            text=True,
-            timeout=5,
-        )
+    running_browsers = get_running_browsers()
 
-        if result.returncode != 0:
-            error = result.stderr.strip()
-            if "Unsupported browser" in error:
-                print(f"Error: {error}")
-            else:
-                print(f"Error getting browser tab: {error}")
-            return None
+    if not running_browsers:
+        print("Error: No supported browser is running")
+        return None
 
-        output = result.stdout.strip()
-        lines = output.split("\n")
-        if len(lines) >= 2:
-            title = lines[0]
-            url = lines[1]
-            return title, url
+    for browser in running_browsers:
+        try:
+            script = BROWSER_SCRIPTS[browser]
+            result = subprocess.run(
+                ["osascript", "-e", script],
+                capture_output=True,
+                text=True,
+                timeout=5,
+            )
 
-        return None
-    except subprocess.TimeoutExpired:
-        print("Error: Timeout getting browser tab")
-        return None
-    except Exception as e:
-        print(f"Error: {e}")
-        return None
+            if result.returncode == 0:
+                output = result.stdout.strip()
+                if output:
+                    lines = output.split("\n")
+                    if len(lines) >= 2 and lines[1]:
+                        return lines[0], lines[1]
+        except subprocess.TimeoutExpired:
+            continue
+        except Exception:
+            continue
+
+    print("Error: Could not get URL from any running browser")
+    return None
 
 
 def main() -> int:
@@ -114,6 +156,9 @@ def main() -> int:
 
     try:
         config = Config.from_env()
+        if not ensure_obsidian_ready(config.vault_path, config.api_key, config.api_port):
+            print("Error: Could not connect to Obsidian API")
+            return 1
         api = ObsidianAPI(config.api_key, config.api_port)
         capture = Capture(api, config)
         capture.bookmark(title or url, url)

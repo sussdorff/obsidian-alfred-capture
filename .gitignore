@@ -41,3 +41,10 @@ logs/
 
 # Test vault daily notes (generated during integration tests)
 test-vault/10-Daily/
+
+# Claude Code
+.claude
+
+# Obsidian UI state and test-run artefacts in the test vault
+test-vault/.obsidian/workspace.json
+test-vault/periodic/

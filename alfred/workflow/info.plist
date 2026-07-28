@@ -6,6 +6,21 @@
 	<string>com.malte.obsidian-capture</string>
 	<key>category</key>
 	<string>Productivity</string>
+	<key>variables</key>
+	<dict>
+		<key>workflow_dir</key>
+		<string></string>
+		<key>VAULT_PATH</key>
+		<string></string>
+		<key>OBSIDIAN_API_KEY</key>
+		<string></string>
+		<key>OBSIDIAN_API_PORT</key>
+		<string>27124</string>
+		<key>DAILY_NOTE_FOLDER</key>
+		<string>10-Daily</string>
+		<key>DAILY_NOTE_FORMAT</key>
+		<string>%Y-%m-%d</string>
+	</dict>
 	<key>connections</key>
 	<dict>
 		<key>00000000-0000-0000-0000-000000000001</key>
@@ -268,11 +283,12 @@
 				<key>escaping</key>
 				<integer>102</integer>
 				<key>script</key>
-				<string>export PATH="/usr/local/bin:/opt/homebrew/bin:$PATH"
-cd "{var:workflow_dir}"
+				<string>#!/bin/bash
+export PATH="/usr/local/bin:/opt/homebrew/bin:$PATH"
+cd "$workflow_dir"
 .venv/bin/python scripts/capture_task.py "{query}"</string>
 				<key>scriptargtype</key>
-				<integer>1</integer>
+				<integer>0</integer>
 				<key>scriptfile</key>
 				<string></string>
 				<key>type</key>
@@ -294,11 +310,12 @@ cd "{var:workflow_dir}"
 				<key>escaping</key>
 				<integer>102</integer>
 				<key>script</key>
-				<string>export PATH="/usr/local/bin:/opt/homebrew/bin:$PATH"
-cd "{var:workflow_dir}"
+				<string>#!/bin/bash
+export PATH="/usr/local/bin:/opt/homebrew/bin:$PATH"
+cd "$workflow_dir"
 .venv/bin/python scripts/capture_idea.py "{query}"</string>
 				<key>scriptargtype</key>
-				<integer>1</integer>
+				<integer>0</integer>
 				<key>scriptfile</key>
 				<string></string>
 				<key>type</key>
@@ -320,11 +337,12 @@ cd "{var:workflow_dir}"
 				<key>escaping</key>
 				<integer>102</integer>
 				<key>script</key>
-				<string>export PATH="/usr/local/bin:/opt/homebrew/bin:$PATH"
-cd "{var:workflow_dir}"
+				<string>#!/bin/bash
+export PATH="/usr/local/bin:/opt/homebrew/bin:$PATH"
+cd "$workflow_dir"
 .venv/bin/python scripts/capture_journal.py "{query}"</string>
 				<key>scriptargtype</key>
-				<integer>1</integer>
+				<integer>0</integer>
 				<key>scriptfile</key>
 				<string></string>
 				<key>type</key>
@@ -346,11 +364,12 @@ cd "{var:workflow_dir}"
 				<key>escaping</key>
 				<integer>102</integer>
 				<key>script</key>
-				<string>export PATH="/usr/local/bin:/opt/homebrew/bin:$PATH"
-cd "{var:workflow_dir}"
+				<string>#!/bin/bash
+export PATH="/usr/local/bin:/opt/homebrew/bin:$PATH"
+cd "$workflow_dir"
 .venv/bin/python scripts/create_daily.py</string>
 				<key>scriptargtype</key>
-				<integer>1</integer>
+				<integer>0</integer>
 				<key>scriptfile</key>
 				<string></string>
 				<key>type</key>
@@ -372,11 +391,12 @@ cd "{var:workflow_dir}"
 				<key>escaping</key>
 				<integer>102</integer>
 				<key>script</key>
-				<string>export PATH="/usr/local/bin:/opt/homebrew/bin:$PATH"
-cd "{var:workflow_dir}"
+				<string>#!/bin/bash
+export PATH="/usr/local/bin:/opt/homebrew/bin:$PATH"
+cd "$workflow_dir"
 .venv/bin/python scripts/capture_bookmark.py</string>
 				<key>scriptargtype</key>
-				<integer>1</integer>
+				<integer>0</integer>
 				<key>scriptfile</key>
 				<string></string>
 				<key>type</key>
@@ -651,6 +671,27 @@ Quick capture to Obsidian daily notes via Local REST API.
 			<string>textfield</string>
 			<key>variable</key>
 			<string>workflow_dir</string>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>default</key>
+				<string></string>
+				<key>placeholder</key>
+				<string>/Users/yourname/path/to/vault</string>
+				<key>required</key>
+				<true/>
+				<key>trim</key>
+				<true/>
+			</dict>
+			<key>description</key>
+			<string>Path to your Obsidian vault (used to auto-open Obsidian)</string>
+			<key>label</key>
+			<string>Vault Path</string>
+			<key>type</key>
+			<string>textfield</string>
+			<key>variable</key>
+			<string>VAULT_PATH</string>
 		</dict>
 		<dict>
 			<key>config</key>

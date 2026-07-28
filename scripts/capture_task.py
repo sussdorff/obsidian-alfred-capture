@@ -14,6 +14,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from src.api import ObsidianAPI, ObsidianAPIError
 from src.capture import Capture
 from src.config import Config
+from src.obsidian import ensure_obsidian_ready
 
 
 def main() -> int:
@@ -34,6 +35,9 @@ def main() -> int:
 
     try:
         config = Config.from_env()
+        if not ensure_obsidian_ready(config.vault_path, config.api_key, config.api_port):
+            print("Error: Could not connect to Obsidian API")
+            return 1
         api = ObsidianAPI(config.api_key, config.api_port)
         capture = Capture(api, config)
         capture.task(text)
